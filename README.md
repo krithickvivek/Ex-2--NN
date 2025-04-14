@@ -1,8 +1,10 @@
-<H3>Name</H3>
-<H3>Register no.</H3>
-<H3>Date</H3>
-<H3>Experiment No. 2 </H3>
-## Implementation of Perceptron for Binary Classification
+<H3>NAME: Krithick Vivekananda</H3>
+<H3>REGISTER NO: 212223240075</H3>
+<H3>EX.NO.2</H3>
+<H3>DATE: </H3>
+
+<H1 ALIGN =CENTER>Implementation of Perceptron for Binary Classification</H1>
+
 # AIM:
 To implement a perceptron for classification using Python<BR>
 
@@ -33,27 +35,119 @@ Indeed if the neuron output is exactly zero it cannot be assumed that the sample
 
 
 # ALGORITHM:
-STEP 1: Importing the libraries<BR>
-STEP 2:Importing the dataset<BR>
-STEP 3:Plot the data to verify the linear separable dataset and consider only two classes<BR>
-STEP 4:Convert the data set to scale the data to uniform range by using Feature scaling<BR>
-STEP 4:Split the dataset for training and testing<BR>
-STEP 5:Define the input vector ‘X’ from the training dataset<BR>
-STEP 6:Define the desired output vector ‘Y’ scaled to +1 or -1 for two classes C1 and C2<BR>
-STEP 7:Assign Initial Weight vector ‘W’ as 0 as the dimension of ‘X’
-STEP 8:Assign the learning rate<BR>
-STEP 9:For ‘N ‘ iterations ,do the following:<BR>
-        v(i) = w(i)*x(i)<BR>
-         
-        W (i+i)= W(i) + learning_rate*(y(i)-t(i))*x(i)<BR>
-STEP 10:Plot the error for each iteration <BR>
-STEP 11:Print the accuracy<BR>
+<b>STEP 1:</b> Importing the libraries<BR>
+<b>STEP 2:</b> Importing the dataset<BR>
+<b>STEP 3:</b> Plot the data to verify the linear separable dataset and consider only two classes<BR>
+<b>STEP 4:</b> Convert the data set to scale the data to uniform range by using Feature scaling<BR>
+<b>STEP 5:</b> Split the dataset for training and testing<BR>
+<b>STEP 6:</b> Define the input vector ‘X’ from the training dataset<BR>
+<b>STEP 7:</b> Define the desired output vector ‘Y’ scaled to +1 or -1 for two classes C1 and C2<BR>
+<b>STEP 8:</b> Assign Initial Weight vector ‘W’ as 0 as the dimension of ‘X’<br>
+<b>STEP 9:</b> Assign the learning rate and For ‘N ‘ iterations ,do the following:<BR>
+```      
+v(i) = w(i)*x(i) <BR>
+W (i+i)= W(i) + learning_rate*(y(i)-t(i))*x(i) <BR> 
+```
+<b>STEP 10:</b> Plot the error for each iteration <BR>
+<b>STEP 11:</b> Print the accuracy<BR>
+
 # PROGRAM:
-    ''' Insert your code here '''
+```python
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from mpl_toolkits import mplot3d
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+class Perceptron:
+    def __init__(self, learning_rate=0.1):
+        self.learning_rate = learning_rate
+        self._b = 0.0
+        self._w = None
+        self.misclassified_samples = []
+
+    def fit(self, x: np.array, y: np.array, n_iter=10):
+        self._b = 0.0
+        self._w = np.zeros(x.shape[1])
+        self.misclassified_samples = []
+        for _ in range(n_iter):
+            errors = 0
+            for xi, yi in zip(x, y):
+                update = self.learning_rate * (yi - self.predict(xi))
+                self._b += update
+                self._w += update * xi
+                errors += int(update != 0.0)
+            self.misclassified_samples.append(errors)
+
+    def f(self, x: np.array) -> float:
+        return np.dot(x, self._w) + self._b
+
+    def predict(self, x: np.array):
+        return np.where(self.f(x) >= 0, 1, -1)
+
+# Load and prepare the Iris dataset
+df = pd.read_csv("iris.csv")
+print(df.head())
+
+y = df.iloc[:, 4].values
+x = df.iloc[:, 0:3].values
+
+# 3D visualization of the Iris dataset
+fig = plt.figure()
+ax = plt.axes(projection='3d')
+ax.set_title('Iris data set')
+ax.set_xlabel('Sepal length in width (cm)')
+ax.set_ylabel('Sepal width in width (cm)')
+ax.set_zlabel('Petal length in width (cm)')
+ax.scatter(x[:50, 0], x[:50, 1], x[:50, 2], color='red', marker='o', s=4, edgecolor='red', label='Iris Setosa')
+ax.scatter(x[50:100, 0], x[50:100, 2], color='blue', marker='^', s=4, edgecolor='blue', label='Iris Versicolour')
+ax.scatter(x[100:150, 0], x[100:150, 1], x[100:150, 2], color='green', marker='x', s=4, edgecolor='green', label='Iris Virginica')
+plt.legend(loc='upper left')
+plt.show()
+
+# Prepare data for binary classification (Setosa vs Versicolour)
+x = x[0:100, 0:2]
+y = y[0:100]
+
+# 2D visualization of the selected classes
+plt.scatter(x[:50, 0], x[:50, 1], color='red', marker='o', label='Setosa')
+plt.scatter(x[50:100, 0], x[50:100, 1], color='blue', marker='x', label='Versicolour')
+plt.xlabel('Sepal length')
+plt.ylabel('Petal length')
+plt.legend(loc='upper left')
+plt.show()
+
+# Convert labels to binary values (1 for Setosa, -1 for Versicolour)
+y = np.where(y == 'Iris-Setosa', 1, -1)
+
+# Normalize features
+x[:, 0] = (x[:, 0] - x[:, 0].mean()) / x[:, 0].std()
+x[:, 1] = (x[:, 1] - x[:, 1].mean()) / x[:, 1].std()
+
+# Split data into training and test sets
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=0)
+
+# Train the perceptron
+classifier = Perceptron(learning_rate=0.01)
+classifier.fit(x_train, y_train)
+
+# Evaluate the model
+print("accuracy", accuracy_score(classifier.predict(x_test), y_test) * 100)
+
+# Plot training errors over epochs
+plt.plot(range(1, len(classifier.misclassified_samples) + 1), classifier.misclassified_samples, marker='o')
+plt.xlabel('Epochs')
+plt.ylabel('Errors')
+plt.show()
+```
 
 # OUTPUT:
+![image](https://github.com/user-attachments/assets/6d662aa9-131d-49e8-9e8c-f4193311ec79)
+![image](https://github.com/user-attachments/assets/e58fa468-7f32-498c-9338-364c95ee6c3c)
+![image](https://github.com/user-attachments/assets/1917e969-3d85-4150-bfb2-53b2dcc30454)
+![image](https://github.com/user-attachments/assets/8c7401bd-33e5-46a6-a6c3-778cf2657bb5)
 
-    ''' Show your result '''
 
 # RESULT:
  Thus, a single layer perceptron model is implemented using python to classify Iris data set.
